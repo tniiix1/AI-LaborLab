@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#06152f">
+  <title>AI Labor Lab — Карта профессий будущего</title>
+  <link rel="stylesheet" href="style.css?v=5">
+  <div class="assistant-panel" id="assistantPanel" hidden role="dialog" aria-label="AI Labor Assistant">
+  <div class="ap-head"><span class="ab-dot"></span><div><b>AI Labor Assistant</b><small>Отвечает на частые вопросы о ИИ и работе</small></div><button class="ap-close" id="apClose" type="button" aria-label="Закрыть">×</button></div>
+  <div class="ap-log" id="apLog" aria-live="polite"></div>
+  <div class="ap-chips" id="apChips"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#home"><span class="brand-mark">∿</span><span>AI Labor Lab</span></a>
+  <nav class="topnav">
+    <a href="#home" data-page="home">Главная</a><a href="#professions" data-page="professions">Профессии</a>
+    <a href="#calculator" data-page="calculator">Калькулятор</a><a href="#map" data-page="map">Матрица профессий</a>
+    <a href="#method" data-page="method">Исследование</a><a href="#about" data-page="about">О проекте</a>
+  </nav>
+  <button class="icon-btn" id="headerSearch" title="Поиск">⌕</button>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar">
+    <a href="#home" data-page="home">⌂ <span>Главная</span></a>
+    <a href="#calculator" data-page="calculator">▣ <span>Калькулятор</span></a>
+    <a href="#map" data-page="map" class="active">⌗ <span>Матрица профессий</span></a>
+    <a href="#professions" data-page="professions">▦ <span>Каталог профессий</span></a>
+    <a href="#compare" data-page="compare">⇄ <span>Моё сравнение</span></a>
+    <a href="#method" data-page="method">ⓘ <span>О проекте</span></a>
+  </aside>
+
+  <main>
+    <section id="home" class="page hero-page">
+      <div class="hero-copy">
+        <div class="eyebrow">ИССЛЕДУЙ РЫНОК ТРУДА</div>
+        <h1>Как искусственный<br>интеллект меняет<br><span>профессии?</span></h1>
+        <p>Интерактивная платформа для анализа рынка труда, оценки профессий и поиска своего будущего.</p>
+        <div class="hero-actions"><a class="primary-btn" href="#map">Исследовать профессии <span>↗</span></a><a class="secondary-btn" href="#calculator">Оценить свою профессию</a></div>
+        <div class="hero-stats"><div><b id="statProf">200+</b><small>профессий в каталоге</small></div><div><b id="statGroups">16</b><small>профессиональных групп</small></div><div><b>2</b><small>авторских индекса</small></div></div>
+      </div>
+      <div class="hero-art"><canvas id="headCanvas" role="img" aria-label="Интерактивная 3D-модель головы из нейросети: потяните, чтобы повернуть"></canvas><div class="assistant-badge" id="assistantBadge"><span class="ab-dot"></span><b>AI Labor Assistant</b></div><button class="ask-btn" id="askBtn" type="button" aria-expanded="false" aria-controls="assistantPanel">💬 Задать вопрос</button><span class="head-hint" id="headHint">Потяните, чтобы повернуть</span><div class="hero-note">HUMAN<br><strong>+</strong> AI</div></div>
+      <div class="feature-grid">
+        <a href="#map" class="feature-card"><span>⌕</span><b>Исследовать<br>профессии</b><small>Сравнивайте роли на карте</small></a>
+        <a href="#calculator" class="feature-card"><span>◉</span><b>Оценить<br>свою профессию</b><small>Пять понятных критериев</small></a>
+        <a href="#map" class="feature-card"><span>⌁</span><b>Изучить модель<br>ИТП и ИНЧ</b><small>Два индекса — один взгляд</small></a>
+        <a href="#method" class="feature-card"><span>▤</span><b>Посмотреть<br>методологию</b><small>Как устроены расчёты</small></a>
+      </div>
+
+      <div class="globe-section" id="globeSection">
+        <p class="globe-caption">Модель Земли: отмечены страны, в которых ИИ уже активно внедрён в профессии, по данным OECD</p>
+        <div class="globe-wrap" id="globeWrap">
+          <canvas id="globeCanvas" role="img" aria-label="Интерактивная модель Земли: нажмите на светящуюся точку, чтобы увидеть, какие профессии и задачи ИИ уже выполняет в стране"></canvas>
+          <span class="globe-hint" id="globeHint">Потяните, чтобы повернуть · нажмите на точку</span>
+          <div class="country-panel" id="countryPanel" hidden role="dialog" aria-live="polite"><button class="country-close" id="countryClose" type="button" aria-label="Закрыть">×</button><div id="countryBody"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="map" class="page">
+      <div class="section-head"><div><div class="eyebrow">ИНТЕРАКТИВНАЯ ВИЗУАЛИЗАЦИЯ</div><h1>Матрица профессий</h1><p>Изучайте профессии на координатной плоскости ИТП × ИНЧ.</p></div><button class="outline-btn" id="exportCsv">↓ Экспорт CSV</button></div>
+      <div class="map-toolbar panel">
+        <label class="field grow"><span>Поиск профессии или группы</span><input id="mapSearch" list="professionOptions" placeholder="Например, дипломат, IT, медицина…"><datalist id="professionOptions"></datalist></label>
+        <label class="field"><span>Режим отображения</span><select id="viewMode"><option value="all">Все профессии</option><option value="group">Группы профессий</option><option value="one">Одна профессия</option></select></label>
+        <label class="field" id="groupField"><span>Профессиональная группа</span><select id="groupFilter"><option value="all">Все группы</option></select></label>
+        <button class="outline-btn" id="resetFilters">Сбросить</button>
+      </div>
+      <div class="filter-row panel">
+        <div class="range-field"><label for="minItp">ИТП от <b id="minItpLabel">0</b></label><input type="range" id="minItp" min="0" max="10" step=".5" value="0"></div>
+        <div class="range-field"><label for="maxItp">ИТП до <b id="maxItpLabel">10</b></label><input type="range" id="maxItp" min="0" max="10" step=".5" value="10"></div>
+        <div class="range-field"><label for="minInch">ИНЧ от <b id="minInchLabel">0</b></label><input type="range" id="minInch" min="0" max="10" step=".5" value="0"></div>
+        <div class="range-field"><label for="maxInch">ИНЧ до <b id="maxInchLabel">10</b></label><input type="range" id="maxInch" min="0" max="10" step=".5" value="10"></div>
+        <label class="field status-field"><span>Статус данных</span><select id="statusFilter"><option value="all">Все оценки</option><option value="demo">Предварительные</option><option value="user">Мои оценки</option></select></label>
+      </div>
+      <div class="map-layout">
+        <div class="panel chart-panel"><div class="panel-title"><div><h2>Карта рынка труда</h2><p id="mapSubtitle">Все профессии из демонстрационной базы</p></div><span class="live-pill"><i></i> Интерактивная</span></div><div class="chart-wrap"><canvas id="professionChart" aria-label="Координатная плоскость профессий"></canvas></div><div class="chart-legend" id="chartLegend"></div></div>
+        <aside class="panel map-side"><h2>На карте</h2><div class="metric"><span>Показано профессий</span><b id="visibleCount">0</b></div><div class="metric"><span>Профессиональных групп</span><b id="visibleGroups">0</b></div><div class="metric"><span>Выбранная профессия</span><b id="selectedName">Не выбрана</b></div><hr><h3>Как читать карту</h3><p><b>ИТП →</b> потенциал трансформации задач.</p><p><b>ИНЧ ↑</b> значимость взаимодействия, ответственности и творчества.</p><p class="notice">Точки отражают предварительные демонстрационные оценки, а не прогноз исчезновения профессий.</p><button class="primary-btn full" id="openSelected">Открыть карточку</button></aside>
+      </div>
+      <div class="panel selected-panel" id="selectedPanel"><div class="empty-state">Нажмите на точку на карте или найдите профессию через поиск — здесь появится её карточка.</div></div>
+    </section>
+
+    <section id="professions" class="page">
+      <div class="section-head"><div><div class="eyebrow">БАЗА ЗАНЯТОСТИ</div><h1>Каталог профессий</h1><p>Выбирайте профессию или добавляйте собственную.</p></div><button class="primary-btn" id="addProfessionTop">＋ Добавить профессию</button></div>
+      <div class="catalog-controls panel"><input id="catalogSearch" placeholder="Поиск по названию профессии…"><select id="catalogGroup"><option value="all">Все группы</option></select><select id="catalogSort"><option value="name">По названию</option><option value="itp">По ИТП</option><option value="inch">По ИНЧ</option></select><span id="catalogCount"></span></div>
+      <div class="profession-grid" id="professionGrid"></div>
+    </section>
+
+    <section id="calculator" class="page">
+      <div class="section-head"><div><div class="eyebrow">ИНСТРУМЕНТ ОЦЕНКИ</div><h1>Калькулятор профессий</h1><p>Оцените профессию по пяти параметрам и рассчитайте ИТП и ИНЧ.</p></div></div>
+      <div class="calculator-layout"><div class="panel calculator-panel">
+        <label class="field"><span>Название профессии</span><input id="calcName" list="professionOptions" placeholder="Выберите или введите профессию"></label>
+        <label class="field"><span>Профессиональная группа</span><select id="calcGroup"></select></label>
+        <div id="criteriaInputs"></div>
+        <div class="calc-actions"><button class="primary-btn" id="calculateBtn">Рассчитать показатели</button><button class="outline-btn" id="saveScoreBtn">Сохранить оценку</button></div>
+      </div><aside class="panel formula-panel"><h2>Формулы расчёта</h2><div class="formula"><b>ИТП =</b><span>R + D + (10 − H) + (10 − A)</span><em>4</em></div><div class="formula"><b>ИНЧ =</b><span>H + A + C</span><em>3</em></div><p>Все критерии оцениваются от 0 до 10. Высокий ИТП означает больший потенциал изменения содержания задач в рамках модели, а не обязательное исчезновение профессии.</p><p class="notice">Оценка, сделанная пользователем, будет помечена как пользовательская. Она не считается экспертной.</p></aside></div>
+      <div class="panel result-panel" id="calcResult"><div class="empty-state">Заполните оценки и нажмите «Рассчитать показатели».</div></div>
+    </section>
+
+    <section id="compare" class="page">
+      <div class="section-head"><div><div class="eyebrow">СРАВНЕНИЕ</div><h1>Моё сравнение</h1><p>Сопоставляйте оценки и смотрите разницу между профессиями.</p></div></div>
+      <div class="panel compare-controls"><label class="field"><span>Профессия 1</span><select id="compareA"></select></label><label class="field"><span>Профессия 2</span><select id="compareB"></select></label><button class="primary-btn" id="compareBtn">Сравнить</button></div><div id="compareResult" class="panel empty-state">Выберите две профессии для сравнения.</div>
+    </section>
+
+    <section id="method" class="page">
+      <div class="section-head"><div><div class="eyebrow">НАУЧНАЯ ОСНОВА</div><h1>Методология исследования</h1><p>Описание модели, формул и основных принципов работы.</p></div></div>
+      <div class="method-layout"><aside class="panel method-nav"><a href="#m-goal">01 Цель и задачи</a><a href="#m-model">02 Авторская модель</a><a href="#m-criteria">03 Критерии</a><a href="#m-formulas">04 Формулы</a><a href="#m-limits">05 Ограничения</a><a href="#m-history">06 История оценок</a></aside><article class="panel method-article">
+        <h2 id="m-goal">Цель и задачи</h2><p>Цель проекта — исследовать, как искусственный интеллект может менять содержание профессиональных задач, и создать интерактивный инструмент для сравнения профессий по единой системе критериев.</p>
+        <h2 id="m-model">Авторская модель оценки профессий</h2><p>Каждая профессия оценивается по пяти критериям по шкале от 0 до 10. Значения используются для расчёта двух индексов: ИТП и ИНЧ. Модель помогает сравнивать профессии в рамках выбранных критериев, но не является точным прогнозом исчезновения рабочих мест.</p>
+        <h2 id="m-criteria">Пять критериев</h2><ul><li><b>R — рутинность работы:</b> насколько часто повторяются однотипные действия.</li><li><b>D — цифровизируемость задач:</b> какая часть задач потенциально может выполняться цифровыми системами.</li><li><b>H — человеческое взаимодействие:</b> насколько работа зависит от общения и доверия.</li><li><b>A — ответственность за результат:</b> насколько серьёзными могут быть последствия ошибок.</li><li><b>C — творчество:</b> насколько часто нужны новые решения и нестандартное мышление.</li></ul>
+        <h2 id="m-formulas">Формулы ИТП и ИНЧ</h2><div class="formula"><b>ИТП =</b><span>R + D + (10 − H) + (10 − A)</span><em>4</em></div><div class="formula"><b>ИНЧ =</b><span>H + A + C</span><em>3</em></div><p>Оба индекса находятся в диапазоне от 0 до 10. Чем выше ИТП, тем выше потенциал трансформации задач по данной модели. Чем выше ИНЧ, тем большую роль играют человеческое взаимодействие, ответственность и творчество.</p>
+        <h2 id="m-limits">Ограничения и качество данных</h2><p>Оценки, включённые в первоначальную базу, являются предварительными демонстрационными значениями и не должны восприниматься как официальная статистика или экспертный консенсус. Для повышения объективности нужно описать типичные задачи каждой профессии, привлечь независимых оценщиков и сравнить их результаты.</p><p>Пользовательские оценки хранятся отдельно от демонстрационных. Сохранение в браузере работает только на текущем устройстве и в текущем браузере.</p>
+        <h2 id="m-history">История оценок</h2><p>Когда пользователь сохраняет новую оценку, сайт добавляет запись в локальную историю. Это позволяет сравнить два измерения, но само по себе не доказывает, что профессия реально изменилась: разница может отражать мнение другого оценщика.</p>
+      </article></div>
+    </section>
+
+    <section id="about" class="page">
+      <div class="about-hero panel"><div><div class="eyebrow">ТЕХНОЛОГИИ. ЛЮДИ. БУДУЩЕЕ.</div><h1>AI Labor Lab</h1><p>Интерактивная исследовательская платформа о будущем труда.</p><a class="primary-btn" href="#map">Начать исследование</a></div><div class="about-orbit">✳</div></div>
+      <div class="about-cards"><div class="panel"><h2>Ключевая идея</h2><p>Развитие ИИ не обязательно означает массовое исчезновение профессий. Во многих случаях меняется состав задач и способы работы.</p></div><div class="panel"><h2>Принцип проекта</h2><p>Прозрачные формулы, понятные критерии и честное обозначение качества данных.</p></div></div>
+      <footer class="site-footer">AI Labor Lab · Учебный исследовательский проект · «Трансформация вместо исчезновения»</footer>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="addModal" hidden><div class="modal panel"><button class="modal-close" id="closeModal">×</button><h2>Добавить профессию</h2><p>Добавленная профессия будет сохранена в этом браузере. Оценки отмечаются как пользовательские.</p><label class="field"><span>Название</span><input id="newName" placeholder="Например, специалист по робототехнике"></label><label class="field"><span>Профессиональная группа</span><select id="newGroup"></select></label><button class="primary-btn full" id="createProfession">Продолжить к оценке</button></div></div>
+<div class="toast" id="toast" role="status"></div>
+<script src="script.js?v=5"></script>
+<script src="head3d.js?v=5"></script>
+<script src="globe.js?v=5"></script>
+<script src="assistant.js?v=5"></script>
+</body>
+</html>
